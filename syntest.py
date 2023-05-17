@@ -127,13 +127,15 @@ def parse_args() -> object:
     '''
     Captura y retorna los argumentos del programa
     '''
+    DEFAULT_COUNT = 0
+    DEFAULT_PORT = 80
     parser = argparse.ArgumentParser(description='ARP Ping')
     parser.add_argument(dest='target_ip_address', type=str,
                         help='Destination host IP address')
     parser.add_argument('--count', '-c', dest='count', type=int,
-                        help='Amount of TCP SYN segments to send. Allows integer values greater than or equal to 0. Setting this flag to 0 implies sending packets indefinitely. (Default: 0) (Optional)', default=0)
+                        help=f'Amount of TCP SYN segments to send. Allows integer values greater than or equal to 0. Setting this flag to 0 implies sending packets indefinitely. (Default: {DEFAULT_COUNT}) (Optional)', default=DEFAULT_COUNT)
     parser.add_argument('--port', '-p', dest='target_port', type=int,
-                        help='Remote port to which the segment will be sent (Default: 80)', default=80)
+                        help=f'Remote port to which the segment will be sent (Default: {DEFAULT_PORT})', default=DEFAULT_PORT)
 
     validate_args(parser.parse_args())
 
