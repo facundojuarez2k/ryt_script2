@@ -2,8 +2,14 @@ import sys
 import argparse
 import random
 import re
+import time
+import signal
 from scapy.all import IP, TCP
 import scapy.all as scapy
+import logging
+
+# Suprimir warnings en stdout
+logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 
 TCP_FLAGS = {
     'FIN': 0x01,
@@ -16,9 +22,19 @@ TCP_FLAGS = {
     'CWR': 0x80
 }
 
+# Globales
+_packets_sent = 0
+_packets_received = 0
 
-def generate_private_port() -> int:
-    return random.randint(49152, 65535)
+# Manejar Ctrl + C
+
+
+def signal_handler(sig, frame):
+    print_summary()
+    sys.exit()
+
+
+signal.signal(signal.SIGINT, signal_handler)
 
 
 def main():
@@ -28,32 +44,58 @@ def main():
         print(f'ERROR: {str(ex1)}', file=sys.stderr)
         return 0
 
+    # Inicializar los parámetros
     seq = random.randint(0, 2**32)
-    ip_src = get_src_ip()
-    port_src = generate_private_port()
 
-    ip_packet = IP(src=ip_src, dst=args.target_ip_address)
-    tcp_segment = TCP(sport=port_src, dport=args.target_port, flags="S", seq=seq)
+    try:
+        ip_src = get_src_ip()
+        ip_dst = args.target_ip_address
+        port_src = generate_private_port()
+        port_dst = args.target_port
+    except Exception as e:
+        print(f'ERROR: {str(e)}')
+        sys.exit()
 
-    ans = scapy.sr1(ip_packet/tcp_segment, timeout=3, verbose=0)
+    # Armar packete IP y segmento TCP
+    ip_packet = IP(src=ip_src, dst=ip_dst)
+    tcp_segment = TCP(sport=port_src, dport=port_dst, flags="S", seq=seq)
 
-    if ans is None or ans[TCP] is None:
-        print("No response")
-        exit(1)
+    # Iniciar envío de paquetes
+    iterations = 0
+    global _packets_sent
+    global _packets_received
 
-    if ans[TCP].flags & TCP_FLAGS['SYN']:
-        print("SYN-ACK")
-    elif ans[TCP].flags & TCP_FLAGS['RST']:
-        print("RST-ACK")
+    print(f'\nSYN Test {ip_src}:{port_dst}\n')
 
-    flags_string = format_tcp_flags(ans[TCP].flags)
+    while True:
+        _packets_sent += 1
+        ans = scapy.sr1(ip_packet/tcp_segment, timeout=5, verbose=0)
 
-    print(flags_string)
+        if ans is None or ans[TCP] is None:
+            print("Request timeout")
+        else:
+            _packets_received += 1
+            ans_flags = format_tcp_flags(ans[TCP].flags)
+            print(
+                f'Reply from {ans[IP].src}, port: {ans[TCP].sport}, flags: {ans_flags}')
+
+        if args.count > 0:
+            iterations += 1
+            if args.count == iterations:
+                break
+
+        time.sleep(1)
+
+    print_summary()
+
+    return 0
 
 
 def format_tcp_flags(int_value: int) -> str:
     '''
-        Retorna una cadena de caracteres con las flags activas del encabezado TCP representadas por el argumento int_value
+    Retorna una cadena de caracteres con las flags activas del encabezado TCP representadas por el argumento int_value
+
+    int_value: Flags
     '''
 
     output_string = ""
@@ -66,9 +108,14 @@ def format_tcp_flags(int_value: int) -> str:
 
 
 def get_src_ip(iface=scapy.conf.iface) -> str:
+    '''
+    Retorna la dirección IP de la interfaz iface
+
+    iface: Nombre de la interfaz. Default: scapy.conf.iface
+    '''
     ip = scapy.get_if_addr(iface)
 
-    if ip is "0.0.0.0":
+    if ip == "0.0.0.0":
         raise Exception(
             f'Source IP address on interface {iface} not available')
 
@@ -115,6 +162,18 @@ def is_valid_ipv4(address: str) -> bool:
         r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$")
     match = re.fullmatch(ipv4_address_format, address)
     return match is not None
+
+
+def generate_private_port() -> int:
+    '''
+    Genera un numero de puerto en el rango dinámico/privado
+    '''
+    return random.randint(49152, 65535)
+
+
+def print_summary():
+    print(
+        f'\nSent {_packets_sent} probes, Received {_packets_received} responses\n')
 
 
 if __name__ == '__main__':
