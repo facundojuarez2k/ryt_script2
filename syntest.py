@@ -117,7 +117,8 @@ def get_src_ip(iface=scapy.conf.iface) -> str:
 
     if ip == "0.0.0.0":
         raise Exception(
-            f'Source IP address on interface {iface} not available')
+            f'Source IP address on interface {iface} not available'
+        )
 
     return ip
 
@@ -130,7 +131,7 @@ def parse_args() -> object:
     parser.add_argument(dest='target_ip_address', type=str,
                         help='Destination host IP address')
     parser.add_argument('--count', '-c', dest='count', type=int,
-                        help='Amount of TCP SYN segments to send. Allows integer values greater than or equal to 0. Setting this flag to 0 implies sending packets indefinitely. (Default = 0) (Optional)', default=0)
+                        help='Amount of TCP SYN segments to send. Allows integer values greater than or equal to 0. Setting this flag to 0 implies sending packets indefinitely. (Default: 0) (Optional)', default=0)
     parser.add_argument('--port', '-p', dest='target_port', type=int,
                         help='Remote port to which the segment will be sent (Default: 80)', default=80)
 
