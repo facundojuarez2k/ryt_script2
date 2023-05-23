@@ -64,7 +64,7 @@ def main():
     global _packets_sent
     global _packets_received
 
-    print(f'\nSYN Test {ip_src}:{port_dst}\n')
+    print(f'\nSYN Test [{ip_src}:{port_src}] --> [{ip_dst}:{port_dst}]\n')
 
     while True:
         _packets_sent += 1
