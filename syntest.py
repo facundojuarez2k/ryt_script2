@@ -129,13 +129,15 @@ def parse_args() -> object:
     '''
     DEFAULT_COUNT = 0
     DEFAULT_PORT = 80
-    parser = argparse.ArgumentParser(description='ARP Ping')
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='''SYN Test \n\nSends a TCP segment with the SYN flag set.\n- The target host may reply with a segment containing the RST and ACK flags set (RA) if no socket is using that port.\n- If the remote host is listening on the target port, it should reply with the SYN and ACK flags set (SA).''')
     parser.add_argument(dest='target_ip_address', type=str,
                         help='Destination host IP address')
     parser.add_argument('--count', '-c', dest='count', type=int,
                         help=f'Amount of TCP SYN segments to send. Allows integer values greater than or equal to 0. Setting this flag to 0 implies sending packets indefinitely. (Default: {DEFAULT_COUNT}) (Optional)', default=DEFAULT_COUNT)
     parser.add_argument('--port', '-p', dest='target_port', type=int,
-                        help=f'Remote port to which the segment will be sent (Default: {DEFAULT_PORT})', default=DEFAULT_PORT)
+                        help=f'Target port to which the segment will be sent (Default: {DEFAULT_PORT})', default=DEFAULT_PORT)
 
     validate_args(parser.parse_args())
 
