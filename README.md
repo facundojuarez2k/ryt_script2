@@ -16,6 +16,10 @@ usage: syntest.py [-h] [--count COUNT] [--port TARGET_PORT] target_ip_address
 
 SYN Test
 
+Sends a TCP segment with the SYN flag set.
+- The target host may reply with a segment containing the RST and ACK flags set (RA) if no socket is using that port.
+- If the remote host is listening on the target port, it should reply with the SYN and ACK flags set (SA).
+
 positional arguments:
   target_ip_address     Destination host IP address
 
@@ -27,7 +31,7 @@ optional arguments:
                         to 0 implies sending packets indefinitely. (Default:
                         0) (Optional)
   --port TARGET_PORT, -p TARGET_PORT
-                        Remote port to which the segment will be sent
+                        Target port to which the segment will be sent
                         (Default: 80)
 ```
 
