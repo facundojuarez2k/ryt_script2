@@ -41,7 +41,7 @@ def main():
         args = parse_args()
     except ValueError as ex1:
         print(f'ERROR: {str(ex1)}', file=sys.stderr)
-        return 0
+        sys.exit(1)
 
     # Inicializar los parámetros
     seq = random.randint(0, 2**32)
@@ -53,9 +53,9 @@ def main():
         port_dst = args.target_port
     except Exception as e:
         print(f'ERROR: {str(e)}')
-        sys.exit()
+        sys.exit(1)
 
-    # Armar packete IP y segmento TCP
+    # Armar paquete IP y segmento TCP
     ip_packet = IP(src=ip_src, dst=ip_dst)
     tcp_segment = TCP(sport=port_src, dport=port_dst, flags="S", seq=seq)
 
