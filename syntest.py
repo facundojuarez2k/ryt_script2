@@ -4,12 +4,11 @@ import random
 import re
 import time
 import signal
-from scapy.all import IP, TCP
-import scapy.all as scapy
 import logging
-
 # Suprimir warnings en stdout
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
+from scapy.all import IP, TCP
+import scapy.all as scapy
 
 TCP_FLAGS = {
     'FIN': 0x01,
