@@ -44,7 +44,7 @@ def main():
         sys.exit(1)
 
     # Inicializar los parámetros
-    seq = random.randint(0, 2**32)
+    seq = random.randint(0, 2**32 - 1)
 
     try:
         ip_src = get_src_ip()
